@@ -1,11 +1,17 @@
-from flask import Flask, render_template, request, redirect, session, url_for, flash
+from flask import Flask, render_template, request, redirect, session, flash
 import sqlite3
 import bleach
 import os
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 from user import register_user, login_user
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+
+limiter = Limiter(key_func=get_remote_address)
+limiter.init_app(app)
 
 # Database connection
 def get_db_connection():
@@ -50,6 +56,7 @@ def index():
     return render_template('index.html', reviews=reviews)
 
 @app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("3 per minute") # Ikke elegant, men det funker
 def login():
     if request.method == 'POST':
         email = request.form['email']
