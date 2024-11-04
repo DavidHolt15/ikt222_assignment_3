@@ -61,6 +61,14 @@ def register():
         return redirect('/login')
     return render_template('register.html')
 
+# Function to clear database
+@app.route('/clear_database', methods=['POST'])
+def clear_database():
+    with get_db_connection() as conn:
+        conn.execute("DELETE FROM reviews;")
+        conn.commit()
+    return redirect('/')
+
 # Add Review
 @app.route('/add', methods=('GET', 'POST'))
 def add_review():
