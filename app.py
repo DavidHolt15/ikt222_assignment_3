@@ -84,6 +84,19 @@ def register():
 
     return render_template('register.html')
 
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.pop('user_email', None)
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('login'))
+
+@app.route('/account')
+def account():
+    if 'user_email' not in session:
+        flash('You need to log in first.', 'warning')
+        return redirect(url_for('login'))
+    return render_template('account.html', user_email=session['user_email'])
+
 @app.route('/clear_database', methods=['POST'])
 def clear_database():
     with get_db_connection() as conn:

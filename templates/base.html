@@ -29,6 +29,9 @@
 
     <!-- Content -->
     <div class="container mt-4">
+        {% for msg in get_flashed_messages() %}
+    <p>{{msg}}</p>
+                                                                         {% endfor %}
         <div class="mainContainer">
             {% block content %}
             {% endblock %}
