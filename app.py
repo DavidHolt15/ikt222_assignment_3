@@ -44,7 +44,13 @@ def create_secure_database():
 def index():
     with get_db_connection() as conn:
         reviews = conn.execute('SELECT * FROM reviews').fetchall()
-    return render_template('index.html', reviews=reviews)
+
+    sanitized_reviews = []
+    for review in reviews:
+        sanitized_content = bleach.clean(review['content'])
+        sanitized_reviews.append({**review, 'content': sanitized_content})
+
+    return render_template('index.html', reviews=sanitized_reviews)
 
 # Login/Register
 @app.route('/login')
@@ -61,21 +67,14 @@ def register():
         return redirect('/login')
     return render_template('register.html')
 
-# Function to clear database
-@app.route('/clear_database', methods=['POST'])
-def clear_database():
-    with get_db_connection() as conn:
-        conn.execute("DELETE FROM reviews;")
-        conn.commit()
-    return redirect('/')
-
 # Add Review
 @app.route('/add', methods=('GET', 'POST'))
 def add_review():
     if request.method == 'POST':
         review = request.form['review']
+        sanitized = bleach.clean(review, tags=[], strip=True)
         with get_db_connection() as conn:
-            conn.execute('INSERT INTO reviews (content) VALUES (?)', (review,))
+            conn.execute('INSERT INTO reviews (content) VALUES (?)', (sanitized,))
             conn.commit()
         return redirect('/')
     return render_template('add.html')
