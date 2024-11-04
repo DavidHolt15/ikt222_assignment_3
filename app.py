@@ -1,16 +1,19 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 import sqlite3
 import bleach
+import os
+from user import register_user, login_user
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 
-# Database
+# Database connection
 def get_db_connection():
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     return conn
 
-# Lage 'Reviews' table
+# Create 'Reviews' table
 def create_reviews_table():
     with get_db_connection() as conn:
         conn.execute('''
@@ -21,14 +24,15 @@ def create_reviews_table():
         ''')
         conn.commit()
 
+# Secure user database connection
 def get_secure_db_connection():
-    database = sqlite3.connect('user_auth.db')
-    database.row_factory = sqlite3.Row
-    return database
+    conn = sqlite3.connect('user_auth.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
 def create_secure_database():
-    with get_secure_db_connection() as database:
-        database.execute('''
+    with get_secure_db_connection() as conn:
+        conn.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 email TEXT UNIQUE NOT NULL,
@@ -37,31 +41,48 @@ def create_secure_database():
                 secret_key TEXT
             );
         ''')
-        database.commit()
+        conn.commit()
 
-# Home
 @app.route('/')
 def index():
     with get_db_connection() as conn:
         reviews = conn.execute('SELECT * FROM reviews').fetchall()
     return render_template('index.html', reviews=reviews)
 
-# Login/Register
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        # Attempt to log in the user
+        message, success = login_user(email, password)
+        if success:
+            session['user_email'] = email
+            flash('Login successful!', 'success')
+            return redirect('/')
+        else:
+            flash(message, 'danger')
+
     return render_template('login.html')
 
-# Register
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
-        
-        return redirect('/login')
+        confirm_password = request.form['confirm_password']
+
+        # Attempt to register the user
+        message, success = register_user(email, password, confirm_password)
+        if success:
+            flash('Registration successful! Please log in.', 'success')
+            return redirect('/login')
+        else:
+            flash(message, 'danger')
+
     return render_template('register.html')
 
-# Function to clear database
 @app.route('/clear_database', methods=['POST'])
 def clear_database():
     with get_db_connection() as conn:
@@ -69,8 +90,7 @@ def clear_database():
         conn.commit()
     return redirect('/')
 
-# Add Review
-@app.route('/add', methods=('GET', 'POST'))
+@app.route('/add', methods=['GET', 'POST'])
 def add_review():
     if request.method == 'POST':
         review = request.form['review']
