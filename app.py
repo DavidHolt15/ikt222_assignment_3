@@ -46,19 +46,20 @@ def index():
         reviews = conn.execute('SELECT * FROM reviews').fetchall()
     return render_template('index.html', reviews=reviews)
 
-# Home Safe
-@app.route('/safe')
-def index_safe():
-    with get_db_connection() as conn:
-        reviews = conn.execute('SELECT * FROM reviews').fetchall()
+# Login/Register
+@app.route('/login')
+def login():
+    return render_template('login.html')
 
-    # Sanitize each review's content before rendering
-    sanitized_reviews = []
-    for review in reviews:
-        sanitized_content = bleach.clean(review['content'])  # sanitize each review content
-        sanitized_reviews.append({**review, 'content': sanitized_content})
-
-    return render_template('index_safe.html', reviews=sanitized_reviews)
+# Register
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        return redirect('/login')
+    return render_template('register.html')
 
 # Add Review
 @app.route('/add', methods=('GET', 'POST'))
