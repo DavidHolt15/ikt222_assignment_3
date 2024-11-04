@@ -54,9 +54,10 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        totp_code = request.form['totp']
 
         # Attempt to log in the user
-        message, success = login_user(email, password)
+        message, success = login_user(email, password, totp_code)
         if success:
             session['user_email'] = email
             flash('Login successful!', 'success')

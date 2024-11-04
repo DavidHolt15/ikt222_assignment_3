@@ -1,6 +1,11 @@
 import hashlib
 import os
 import sqlite3
+import pyotp
+import qrcode
+
+from io import BytesIO
+from flask import send_file
 
 def get_secure_db_connection():
     conn = sqlite3.connect('user_auth.db')
@@ -21,22 +26,35 @@ def verify_password(stored_password, provided_password):
 def register_user(email, password, confirm_password):
     if password != confirm_password:
         return "Passwords do not match", False
-    'user'
+
     password_hash = hash_password(password)
+    totp_secret = pyotp.random_base32()
 
     with get_secure_db_connection() as conn:
         try:
-            conn.execute('INSERT INTO users (email, password_hash) VALUES (?, ?)', (email, password_hash))
+            conn.execute('INSERT INTO users (email, password_hash, secret_key) VALUES (?, ?, ?)', (email, password_hash, totp_secret))
             conn.commit()
-            return "User registered successfully", True
+
+            # Generate QR code
+            totp_uri = pyotp.totp.TOTP(totp_secret).provisioning_uri(name=email, issuer_name="YourAppName")
+            qr = qrcode.make(totp_uri)
+            buf = BytesIO()
+            qr.save(buf)
+            buf.seek(0)
+
+            return send_file(buf, mimetype='image/png'), True
         except sqlite3.IntegrityError:
             return "Email already exists", False
 
-def login_user(email, password):
+def login_user(email, password, totp_code):
     with get_secure_db_connection() as conn:
         user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
 
     if user and verify_password(user['password_hash'], password):
-        return "Login successful", True
+        totp = pyotp.TOTP(user['secret_key'])
+        if totp.verify(totp_code):
+            return "Login successful", True
+        else:
+            return "Invalid TOTP code", False
     else:
         return "Invalid email or password", False
