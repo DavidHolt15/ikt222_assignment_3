@@ -21,6 +21,24 @@ def create_reviews_table():
         ''')
         conn.commit()
 
+def get_secure_db_connection():
+    database = sqlite3.connect('user_auth.db')
+    database.row_factory = sqlite3.Row
+    return database
+
+def create_secure_database():
+    with get_secure_db_connection() as database:
+        database.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                is_2fa_enabled INTEGER DEFAULT 0,
+                secret_key TEXT
+            );
+        ''')
+        database.commit()
+
 # Home
 @app.route('/')
 def index():
@@ -42,33 +60,18 @@ def index_safe():
 
     return render_template('index_safe.html', reviews=sanitized_reviews)
 
-# Function to clear database
-@app.route('/clear_database', methods=['POST'])
-def clear_database():
-    with get_db_connection() as conn:
-        conn.execute("DELETE FROM reviews;")
-        conn.commit()
-    return redirect('/')
-
 # Add Review
 @app.route('/add', methods=('GET', 'POST'))
 def add_review():
     if request.method == 'POST':
         review = request.form['review']
-
-        sanitize = 'sanitize' in request.form
-        # Sanitize review if true
-        if sanitize:
-            data = bleach.clean(review)
-        else:
-            data = review  # No sanitization
-
         with get_db_connection() as conn:
-            conn.execute('INSERT INTO reviews (content) VALUES (?)', (data,))
+            conn.execute('INSERT INTO reviews (content) VALUES (?)', (review,))
             conn.commit()
         return redirect('/')
     return render_template('add.html')
 
 if __name__ == '__main__':
     create_reviews_table()
+    create_secure_database()
     app.run(debug=True)
