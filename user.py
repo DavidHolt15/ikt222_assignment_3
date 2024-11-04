@@ -3,6 +3,7 @@ import os
 import sqlite3
 import pyotp
 import qrcode
+import base64
 
 from io import BytesIO
 from flask import send_file
@@ -32,17 +33,22 @@ def register_user(email, password, confirm_password):
 
     with get_secure_db_connection() as conn:
         try:
-            conn.execute('INSERT INTO users (email, password_hash, secret_key) VALUES (?, ?, ?)', (email, password_hash, totp_secret))
+            conn.execute('INSERT INTO users (email, password_hash, secret_key) VALUES (?, ?, ?)',
+                         (email, password_hash, totp_secret))
             conn.commit()
 
-            # Generate QR code
-            totp_uri = pyotp.totp.TOTP(totp_secret).provisioning_uri(name=email, issuer_name="YourAppName")
+            # Generate a TOTP URI compatible with Google Authenticator
+            totp_uri = pyotp.totp.TOTP(totp_secret).provisioning_uri(name=email, issuer_name="ReviewMannen")
+
+            # Create QR code and save it to a BytesIO buffer
             qr = qrcode.make(totp_uri)
             buf = BytesIO()
             qr.save(buf)
             buf.seek(0)
 
-            return send_file(buf, mimetype='image/png'), True
+            # Convert QR code to base64
+            qr_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+            return qr_base64, True
         except sqlite3.IntegrityError:
             return "Email already exists", False
 

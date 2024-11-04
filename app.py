@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, session, url_for, f
 import sqlite3
 import bleach
 import os
+
 from user import register_user, login_user
 
 app = Flask(__name__)
@@ -75,12 +76,12 @@ def register():
         confirm_password = request.form['confirm_password']
 
         # Attempt to register the user
-        message, success = register_user(email, password, confirm_password)
+        qr_code, success = register_user(email, password, confirm_password)
         if success:
-            flash('Registration successful! Please log in.', 'success')
-            return redirect('/login')
+            flash('Registration successful! Scan the QR code with Google Authenticator.', 'success')
+            return render_template('register.html', qr_code=qr_code)
         else:
-            flash(message, 'danger')
+            flash(qr_code, 'danger')  # This holds the error message if registration fails.
 
     return render_template('register.html')
 

@@ -17,4 +17,10 @@
         </div>
         <button type="submit" class="btn btn-primary mt-3">Register</button>
     </form>
+    {% if qr_code %}
+        <div class="mt-5 text-center">
+            <h3>Scan this QR code with Google Authenticator</h3>
+            <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
+        </div>
+    {% endif %}
 {% endblock %}
