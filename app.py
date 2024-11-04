@@ -38,7 +38,6 @@ def create_secure_database():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 email TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
-                is_2fa_enabled INTEGER DEFAULT 0,
                 secret_key TEXT
             );
         ''')

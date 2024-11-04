@@ -6,7 +6,6 @@ import qrcode
 import base64
 
 from io import BytesIO
-from flask import send_file
 
 def get_secure_db_connection():
     conn = sqlite3.connect('user_auth.db')
