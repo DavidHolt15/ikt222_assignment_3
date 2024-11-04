@@ -88,7 +88,7 @@ def register():
 def logout():
     session.pop('user_email', None)
     flash('You have been logged out.', 'success')
-    return redirect(url_for('login'))
+    return render_template('login.html')
 
 @app.route('/account')
 def account():
