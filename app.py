@@ -1,12 +1,16 @@
-from flask import Flask, render_template, request, redirect, session, url_for, flash
+from flask import Flask, render_template, request, redirect, session, flash
 import sqlite3
 import bleach
 import os
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from user import register_user, login_user
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+limiter = Limiter(key_func=get_remote_address)
+limiter.init_app(app)
 
 # Database connection
 def get_db_connection():
@@ -50,8 +54,10 @@ def index():
     return render_template('index.html', reviews=reviews)
 
 @app.route('/login', methods=['GET', 'POST'])
+
 def login():
     if request.method == 'POST':
+
         email = request.form['email']
         password = request.form['password']
         totp_code = request.form['totp']
@@ -93,20 +99,16 @@ def logout():
 @app.route('/account')
 def account():
     if 'user_email' not in session:
-        flash('You need to log in first.', 'warning')
-        return redirect(url_for('login'))
+        flash('You need to log in first.')
+        return redirect('login')
     return render_template('account.html', user_email=session['user_email'])
-
-@app.route('/clear_database', methods=['POST'])
-def clear_database():
-    with get_db_connection() as conn:
-        conn.execute("DELETE FROM reviews;")
-        conn.commit()
-    return redirect('/')
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_review():
-    if request.method == 'POST':
+    if 'user_email' not in session:
+        flash('Please log in first.')
+        return redirect('login')
+    elif request.method == 'POST':
         review = request.form['review']
         with get_db_connection() as conn:
             conn.execute('INSERT INTO reviews (content) VALUES (?)', (review,))
