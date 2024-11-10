@@ -11,7 +11,7 @@
 
    <!-- Navigation -->
 <nav class="navbar navbar-expand-lg">
-    <a class="navbar-brand" href="/">Reviewer</a>
+    <a class="navbar-brand" href="/">RM</a>
     <div class="collapse navbar-collapse">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item">
@@ -37,19 +37,16 @@
         </ul>
     </div>
 </nav>
-
-
     <!-- Content -->
-    <div class="container mt-4">
+    <div class="mainContainer">
         {% for msg in get_flashed_messages() %}
-    <p>{{msg}}</p>
-                                                                         {% endfor %}
-        <div class="mainContainer">
+            <p class="flash">{{msg}}</p>
+        {% endfor %}
+        <div class="container">
             {% block content %}
             {% endblock %}
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>

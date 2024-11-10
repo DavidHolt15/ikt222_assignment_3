@@ -1,21 +1,26 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1 class="text-center">Login</h1>
-    <form action="/login" method="POST" class="mt-4">
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="text" class="form-control" id="email" name="email" required>
-        </div>
-        <div class="form-group mt-3">
-            <label for="password">Password</label>
-            <input type="password" class="form-control" id="password" name="password" required>
-        </div>
-        <div class="form-group mt-3">
-            <label for="totp">TOTP Code</label>
-            <input type="text" class="form-control" id="totp" name="totp" required>
-        </div>
-        <button type="submit" class="btn btn-primary mt-3">Login</button>
-    </form>
-    <p class="mt-3">Don't have an account? <a href="/register">Register here</a></p>
+    <div class="subContainer">
+        <h1 class="text-center">Login</h1>
+        <form action="/login" method="POST" class="mt-4">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="text" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="form-group mt-3">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="form-group mt-3">
+                <label for="totp">TOTP Code</label>
+                <input type="text" class="form-control" id="totp" name="totp" required>
+            </div>
+            <button type="submit" class="btn-primary mt-3 btn">Login</button>
+        </form>
+        <p class="mt-3" style="text-align: center">Don't have an account?</p>
+        <p class="mt-3" style="text-align: center"><a href="/register">Register here</a></p>
+        <p class="mt-3" style="text-align: center">Or:</p>
+        <p class="mt-3" style="text-align: center"><a href="http://localhost:5000/login/github">GITHUB</a> <a href="http://localhost:5000/login/google">GOOGLE</a></p>
+    </div>
 {% endblock %}

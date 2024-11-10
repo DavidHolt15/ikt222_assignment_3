@@ -1,54 +1,63 @@
 body {
     background-color: #121212;
     color: #f0f0f0;
+    font-family: Trebuchet MS;
+    font-size: 18px;
 }
 .mainContainer {
+    margin: 5%;
+}
+.container{
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(10px);
     border-radius: 15px;
-    padding: 4%;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    padding-left: 10vw;
+    padding-right: 10vw;
+    padding-bottom: 4vh;
+    padding-top: 4vh;
+    box-shadow: 0 6px 36px 0 rgba(31, 38, 135, 0.35);
     transition: transform 0.3s ease-in-out;
 }
+.subContainer{
 
+}
+.flash{
+    text-align: center;
+}
 .list-group-item {
+    border: solid transparent 1px;
     background: whitesmoke;
     backdrop-filter: blur(5px);
     border-radius: 10px;
     margin-bottom: 10px;
-    padding: 15px;
-    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.1);
+    padding: 3%;
+    box-shadow: 0 3px 16px 0 rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 .list-group-item:hover {
-     transform: translateY(-5px);
+    border: solid rgba(31, 38, 135, 1) 1px;
+    box-shadow: 0 3px 16px 0 rgba(31, 38, 135, 0.1);
 }
 
 .navbar {
     background-color: whitesmoke;
     border-bottom: black 1px solid;
-    padding: 0.5%;
+    padding: 0.6vh;
 }
-
-.rgb-text {
-    font-size: 1em;
-    font-weight: bold;
-    color: white;
-    animation: rgbAnimation 1.5s infinite;
-    text-shadow: 2px 2px 0 rgba(255, 0, 0, 0.7), -2px -2px 0 rgba(0, 255, 0, 0.7), 2px -2px 0 rgba(0, 0, 255, 0.7);
+h1{
+    font-size: 36px;
 }
-
-/* Animation keyframes */
-@keyframes rgbAnimation {
-    0%, 100% {
-       text-shadow: 2px 2px 0 rgba(255, 0, 0, 0.7), -2px -2px 0 rgba(0, 255, 0, 0.7), 2px -2px 0 rgba(0, 0, 255, 0.7);
-    }
-    33% {
-        text-shadow: -2px 2px 0 rgba(255, 0, 0, 0.7), 2px -2px 0 rgba(0, 255, 0, 0.7), -2px -2px 0 rgba(0, 0, 255, 0.7);
-    }
-    66% {
-        text-shadow: 2px -2px 0 rgba(255, 0, 0, 0.7), -2px 2px 0 rgba(0, 255, 0, 0.7), 2px 2px 0 rgba(0, 0, 255, 0.7);
-    }
+.navbar-brand{
+    font-size: 34px;
+    margin-right: 16px;
+    margin-left: 10px;
+}
+.mt-4{
+    margin-right: 6vh;
+    margin-bottom: 3px;
+}
+.btn{
+    width: 100%;
 }
