@@ -8,8 +8,9 @@ from datetime import datetime, timedelta
 from io import BytesIO
 from flask import flash
 
-def get_secure_db_connection():
-    conn = sqlite3.connect('user_auth.db')
+# Database connection utilities
+def get_db_connection(db_name='database.db'):
+    conn = sqlite3.connect(db_name)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -34,7 +35,7 @@ def register_user(email, password, confirm_password):
     password_hash = hash_password(password)
     totp_secret = pyotp.random_base32()
 
-    with get_secure_db_connection() as conn:
+    with get_db_connection() as conn:
         try:
             conn.execute(
                 '''
@@ -57,7 +58,7 @@ def register_user(email, password, confirm_password):
 
 # Check if the account is temporarily locked
 def check_failed_attempts(email):
-    with get_secure_db_connection() as conn:
+    with get_db_connection() as conn:
         user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
         if user and user['failed_attempts'] >= 3:
             lockout_until = user['lockout_until']
@@ -70,7 +71,7 @@ def check_failed_attempts(email):
 
 # Increment failed attempts and set lockout after 3 attempts
 def increment_failed_attempts(email):
-    with get_secure_db_connection() as conn:
+    with get_db_connection() as conn:
         conn.execute('UPDATE users SET failed_attempts = failed_attempts + 1 WHERE email = ?', (email,))
         user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
         if user and user['failed_attempts'] >= 3:
@@ -85,7 +86,7 @@ def login_user(email, password, totp_code):
         return "Account temporarily locked. Try again later.", False
 
     # Fetch user from database
-    with get_secure_db_connection() as conn:
+    with get_db_connection() as conn:
         user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
 
     # Check if the user exists and has a password hash (non-OAuth users)
@@ -95,7 +96,7 @@ def login_user(email, password, totp_code):
             totp = pyotp.TOTP(user['secret_key'])
             if totp.verify(totp_code):
                 # Reset failed attempts on successful login
-                with get_secure_db_connection() as conn:
+                with get_db_connection() as conn:
                     conn.execute('UPDATE users SET failed_attempts = 0, lockout_until = NULL WHERE email = ?', (email,))
                     conn.commit()
                 return "Login successful", True
@@ -112,7 +113,7 @@ def login_user(email, password, totp_code):
 
 # Store OAuth user without password or TOTP details
 def store_oauth_user(email, provider):
-    with get_secure_db_connection() as conn:
+    with get_db_connection() as conn:
         try:
             conn.execute(
                 'INSERT INTO users (email, provider) VALUES (?, ?)',
