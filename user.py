@@ -4,6 +4,7 @@ import sqlite3
 import pyotp
 import qrcode
 import base64
+import re
 from datetime import datetime, timedelta
 from io import BytesIO
 from flask import flash
@@ -53,10 +54,24 @@ def decrypt_secret(encrypted_secret):
     secret = unpadder.update(decrypted_padded_secret) + unpadder.finalize()
     return secret.decode()
 
+def validate_password(password):
+    if (len(password) >= 8 and
+        re.search(r'[A-Z]', password) and
+        re.search(r'[a-z]', password) and
+        re.search(r'\d', password)):
+        return True
+    return False
+
 # User registration with TOTP setup
 def register_user(email, password, confirm_password):
     if password != confirm_password:
         flash('Passwords do not match', 'danger')
+        return None, False
+
+        # Validate password rules
+    if not validate_password(password):
+        flash(
+            'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, and a number','danger')
         return None, False
 
     password_hash = hash_password(password)

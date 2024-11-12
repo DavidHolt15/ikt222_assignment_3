@@ -149,7 +149,6 @@ def oauth_callback(provider):
     return redirect('/')
 
 
-#main
 if __name__ == '__main__':
     create_table()
     app.run(debug=True)
