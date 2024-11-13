@@ -12,6 +12,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
 from flask.cli import load_dotenv
+from flask_limiter import Limiter
 
 load_dotenv()
 
@@ -105,7 +106,6 @@ def check_failed_attempts(email):
         if user and user['failed_attempts'] >= 3:
             lockout_until = user['lockout_until']
             if lockout_until and datetime.now() < datetime.fromisoformat(lockout_until):
-                flash("Account is temporarily locked. Try again later.", "danger")
                 return False
             conn.execute('UPDATE users SET failed_attempts = 0, lockout_until = NULL WHERE email = ?', (email,))
             conn.commit()

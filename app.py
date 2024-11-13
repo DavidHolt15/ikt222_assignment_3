@@ -5,9 +5,13 @@ import os
 import secrets
 from authlib.integrations.flask_client import OAuth
 from user import register_user, login_user, store_oauth_user
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+
+limiter = Limiter(get_remote_address, app=app)
 
 # OAuth setup
 oauth = OAuth(app)
@@ -54,6 +58,7 @@ def create_table():
 
 # Routes
 @app.route('/')
+@limiter.limit("30 per minute")
 def index():
     with get_db_connection() as conn:
         reviews = conn.execute('SELECT * FROM reviews').fetchall()
@@ -61,6 +66,7 @@ def index():
     return render_template('index.html', reviews=sanitized_reviews)
 
 @app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("30 per minute")
 def login():
     if 'user_email' in session:
         return render_template('account.html', user_email=session['user_email'])
@@ -76,6 +82,7 @@ def login():
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
+@limiter.limit("30 per minute")
 def register():
     if 'user_email' in session:
         return render_template('account.html', user_email=session['user_email'])
@@ -90,12 +97,14 @@ def register():
     return render_template('register.html')
 
 @app.route('/logout', methods=['POST'])
+@limiter.limit("30 per minute")
 def logout():
     session.pop('user_email', None)
     flash('You have been logged out.', 'success')
     return redirect('/login')
 
 @app.route('/account')
+@limiter.limit("30 per minute")
 def account():
     if 'user_email' not in session:
         flash('You need to log in first.')
@@ -103,6 +112,7 @@ def account():
     return render_template('account.html', user_email=session['user_email'])
 
 @app.route('/add', methods=['GET', 'POST'])
+@limiter.limit("30 per minute")
 def add_review():
     if 'user_email' not in session:
         flash('Please log in first.')
@@ -117,6 +127,7 @@ def add_review():
     return render_template('add.html')
 
 @app.route('/login/<provider>')
+@limiter.limit("30 per minute")
 def oauth_login(provider):
     if 'user_email' in session:
         return render_template('account.html', user_email=session['user_email'])
@@ -128,6 +139,7 @@ def oauth_login(provider):
     return provider_oauth.authorize_redirect(redirect_uri, nonce=session.get('nonce'))
 
 @app.route('/callback/<provider>')
+@limiter.limit("30 per minute")
 def oauth_callback(provider):
     provider_oauth = oauth.create_client(provider)
     token = provider_oauth.authorize_access_token()
